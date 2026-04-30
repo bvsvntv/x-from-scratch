@@ -2,6 +2,18 @@ package core
 
 import "errors"
 
+// Reads a RESP encoded simple string from data and returns
+// the string, the delta, and the error
+func readSimpleString(data []byte) (string, int, error) {
+	// first character '+'
+	pos := 1
+
+	for ; data[pos] != '\r'; pos++ {
+	}
+
+	return string(data[1:pos]), pos + 2, nil
+}
+
 func DecodeOne(data []byte) (any, int, error) {
 	if len(data) == 0 {
 		return nil, 0, errors.New("no data")
@@ -9,7 +21,7 @@ func DecodeOne(data []byte) (any, int, error) {
 
 	switch data[0] {
 	case '+':
-		// read string
+		return readSimpleString(data)
 	case '-':
 		// read error
 	case ':':
