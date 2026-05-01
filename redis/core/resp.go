@@ -67,6 +67,28 @@ func readBulkString(data []byte) (any, int, error) {
 	return string(data[pos:(pos + len)]), pos + len + 2, nil
 }
 
+// Reads a RESP encoded array from data and returns
+// the array, the delta, and the error
+func readArray(data []byte) (any, int, error) {
+	// first character '*'
+	pos := 1
+
+	// reading the length
+	count, delta := readLength(data[pos:])
+	pos += delta
+
+	var elems []any = make([]any, count)
+	for i := range elems {
+		elem, delta, err := DecodeOne(data[pos:])
+		if err != nil {
+			return nil, 0, err
+		}
+		elems[i] = elem
+		pos += delta
+	}
+	return elems, pos, nil
+}
+
 func DecodeOne(data []byte) (any, int, error) {
 	if len(data) == 0 {
 		return nil, 0, errors.New("no data")
@@ -82,7 +104,7 @@ func DecodeOne(data []byte) (any, int, error) {
 	case '$':
 		return readBulkString(data)
 	case '*':
-		// read array
+		return readArray(data)
 	}
 
 	return nil, 0, nil
