@@ -14,6 +14,12 @@ func readSimpleString(data []byte) (string, int, error) {
 	return string(data[1:pos]), pos + 2, nil
 }
 
+// Reads a RESP encoded error from data and returns
+// the error string, the delta, and the error
+func readError(data []byte) (string, int, error) {
+	return readSimpleString(data)
+}
+
 func DecodeOne(data []byte) (any, int, error) {
 	if len(data) == 0 {
 		return nil, 0, errors.New("no data")
@@ -23,7 +29,7 @@ func DecodeOne(data []byte) (any, int, error) {
 	case '+':
 		return readSimpleString(data)
 	case '-':
-		// read error
+		return readError(data)
 	case ':':
 		// read int
 	case '$':
