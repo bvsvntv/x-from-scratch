@@ -20,6 +20,20 @@ func readError(data []byte) (string, int, error) {
 	return readSimpleString(data)
 }
 
+// Reads a RESP encoded integer from data and returns
+// the integer value, the delta, and the error
+func readInt64(data []byte) (any, int, error) {
+	// first character ':'
+	pos := 1
+	var value int64 = 0
+
+	for ; data[pos] != '\r'; pos++ {
+		value = value*10 + int64(data[pos]-'0')
+	}
+
+	return value, pos + 2, nil
+}
+
 func DecodeOne(data []byte) (any, int, error) {
 	if len(data) == 0 {
 		return nil, 0, errors.New("no data")
@@ -31,7 +45,7 @@ func DecodeOne(data []byte) (any, int, error) {
 	case '-':
 		return readError(data)
 	case ':':
-		// read int
+		return readInt64(data)
 	case '$':
 		// read bulk string
 	case '*':
