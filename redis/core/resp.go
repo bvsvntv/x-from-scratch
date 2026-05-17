@@ -145,7 +145,7 @@ func Encode(value any, isSimple bool) []byte {
 		if isSimple {
 			return fmt.Appendf(nil, "+%s\r\n", v)
 		}
-		return fmt.Appendf(nil, "$%d\r\n+%s\r\n", len(v), v)
+		return fmt.Appendf(nil, "$%d\r\n%s\r\n", len(v), v)
 	}
 	return []byte{}
 }

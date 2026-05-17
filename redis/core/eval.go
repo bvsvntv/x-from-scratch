@@ -2,7 +2,6 @@ package core
 
 import (
 	"errors"
-	"log"
 	"net"
 )
 
@@ -24,7 +23,6 @@ func evalPING(args []string, c net.Conn) error {
 }
 
 func EvalAndRespond(cmd *RedisCmd, c net.Conn) error {
-	log.Println("command: ", cmd.Cmd)
 	switch cmd.Cmd {
 	case "PING":
 		return evalPING(cmd.Args, c)

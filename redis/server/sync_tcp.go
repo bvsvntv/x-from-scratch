@@ -31,7 +31,7 @@ func readCommand(c net.Conn) (*core.RedisCmd, error) {
 }
 
 func respondError(err error, c net.Conn) {
-	c.Write([]byte(fmt.Sprintf("-%s\r\n", err)))
+	fmt.Fprintf(c, "-%s\r\n", err)
 }
 
 func respond(cmd *core.RedisCmd, c net.Conn) {
