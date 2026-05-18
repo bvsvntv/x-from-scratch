@@ -1,7 +1,9 @@
 package core
 
 import (
+	"bytes"
 	"fmt"
+	"reflect"
 	"testing"
 )
 
@@ -79,5 +81,37 @@ func TestArrayDecode(t *testing.T) {
 				t.Fail()
 			}
 		}
+	}
+}
+
+func TestEncode(t *testing.T) {
+	tests := []struct {
+		name     string
+		value    any
+		isSimple bool
+		expected []byte
+	}{
+		{
+			name:     "bulk string",
+			value:    "BULK",
+			isSimple: false,
+			expected: []byte("$4\r\nBULK\r\n"),
+		},
+		{
+			name:     "simple string",
+			value:    "OK",
+			isSimple: true,
+			expected: []byte("+OK\r\n"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Encode(tt.value, tt.isSimple)
+
+			if !bytes.Equal(got, tt.expected) {
+				t.Fatalf("expected %q, got %q", tt.expected, got)
+			}
+		})
 	}
 }
