@@ -12,7 +12,7 @@ import (
 	"redis/core"
 )
 
-func readCommand(c net.Conn) (*core.RedisCmd, error) {
+func readCommand(c io.ReadWriter) (*core.RedisCmd, error) {
 	var buf []byte = make([]byte, 512)
 	n, err := c.Read(buf[:])
 	if err != nil {
@@ -30,11 +30,11 @@ func readCommand(c net.Conn) (*core.RedisCmd, error) {
 	}, nil
 }
 
-func respondError(err error, c net.Conn) {
+func respondError(err error, c io.ReadWriter) {
 	fmt.Fprintf(c, "-%s\r\n", err)
 }
 
-func respond(cmd *core.RedisCmd, c net.Conn) {
+func respond(cmd *core.RedisCmd, c io.ReadWriter) {
 	err := core.EvalAndRespond(cmd, c)
 	if err != nil {
 		respondError(err, c)
@@ -49,31 +49,29 @@ func RunSyncTCPServer() {
 	// listening to the configures host:port
 	lsnr, err := net.Listen("tcp", config.Host+":"+strconv.Itoa(config.Port))
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return
 	}
 
 	for {
-		// blocking call: waiting for the new client to connect
+		// Blocking call: waiting for the new client to connect
 		c, err := lsnr.Accept()
 		if err != nil {
-			panic(err)
+			log.Println(err)
 		}
 
 		// increment the number concurrent clients
 		con_clients += 1
-		log.Println("client connected with address: ", c.RemoteAddr(), "concurrent clients: ", con_clients)
 
 		for {
-			// over the socket, continuously read the command print it out
+			// Over the socket, continuously read the command print it out
 			cmd, err := readCommand(c)
 			if err != nil {
 				c.Close()
 				con_clients -= 1
-				log.Println("client disconnected", c.RemoteAddr(), "concurrent clients:", con_clients)
 				if err == io.EOF {
 					break
 				}
-				log.Println("err", err)
 			}
 
 			respond(cmd, c)

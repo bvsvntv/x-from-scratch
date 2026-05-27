@@ -14,5 +14,5 @@ func main() {
 	flag.Parse()
 
 	log.Println("starting redis server...")
-	server.RunSyncTCPServer()
+	server.RunAsyncTCPServer()
 }
