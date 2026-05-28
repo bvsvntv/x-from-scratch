@@ -91,7 +91,7 @@ func RunAsyncTCPServer() error {
 					Events: syscall.EPOLLIN,
 					Fd:     int32(fd),
 				}
-				if err = syscall.EpollCtl(epollFD, syscall.EPOLL_CTL_ADD, serverFD, &socketClientEvent); err != nil {
+				if err = syscall.EpollCtl(epollFD, syscall.EPOLL_CTL_ADD, fd, &socketClientEvent); err != nil {
 					log.Fatal(err)
 				}
 			} else {
