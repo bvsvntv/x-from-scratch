@@ -5,6 +5,8 @@ import (
 	"io"
 )
 
+var RESP_NIL []byte = []byte("$-1\r\n")
+
 func evalPING(args []string, c io.ReadWriter) error {
 	var b []byte
 
@@ -47,7 +49,7 @@ func evalGET(args []string, c io.ReadWriter) error {
 	// Get the key from the Hash Table
 	obj := Get(key)
 	if obj == nil {
-		c.Write([]byte("NO KEY\r\n"))
+		c.Write(RESP_NIL)
 		return nil
 	}
 
