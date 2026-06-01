@@ -19,3 +19,7 @@ func NewObj(value any) *Obj {
 func Put(k string, obj *Obj) {
 	store[k] = obj
 }
+
+func Get(k string) *Obj {
+	return store[k]
+}

@@ -37,12 +37,32 @@ func evalSET(args []string, c io.ReadWriter) error {
 	return nil
 }
 
+func evalGET(args []string, c io.ReadWriter) error {
+	if len(args) != 1 {
+		return errors.New("ERR: wrong number of arguments for 'get' command")
+	}
+
+	var key string = args[0]
+
+	// Get the key from the Hash Table
+	obj := Get(key)
+	if obj == nil {
+		c.Write([]byte("NO KEY\r\n"))
+		return nil
+	}
+
+	c.Write(Encode(obj.Value, false))
+	return nil
+}
+
 func EvalAndRespond(cmd *RedisCmd, c io.ReadWriter) error {
 	switch cmd.Cmd {
 	case "PING":
 		return evalPING(cmd.Args, c)
 	case "SET":
 		return evalSET(cmd.Args, c)
+	case "GET":
+		return evalGET(cmd.Args, c)
 	default:
 		return evalPING(cmd.Args, c)
 	}
