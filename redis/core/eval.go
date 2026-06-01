@@ -125,6 +125,20 @@ func evalTTL(args []string, c io.ReadWriter) error {
 	return nil
 }
 
+func evalDEL(args []string, c io.ReadWriter) error {
+	var countDeleted int = 0
+
+	for _, key := range args {
+		if ok := Del(key); ok {
+			countDeleted++
+		}
+	}
+
+	// Return value
+	c.Write(Encode(countDeleted, false))
+	return nil
+}
+
 func EvalAndRespond(cmd *RedisCmd, c io.ReadWriter) error {
 	switch cmd.Cmd {
 	case "PING":
@@ -135,6 +149,8 @@ func EvalAndRespond(cmd *RedisCmd, c io.ReadWriter) error {
 		return evalGET(cmd.Args, c)
 	case "TTL":
 		return evalTTL(cmd.Args, c)
+	case "DEL":
+		return evalDEL(cmd.Args, c)
 	default:
 		return evalPING(cmd.Args, c)
 	}
