@@ -88,6 +88,43 @@ func evalGET(args []string, c io.ReadWriter) error {
 	return nil
 }
 
+func evalTTL(args []string, c io.ReadWriter) error {
+	if len(args) != 1 {
+		return errors.New("ERR: wrong number of arguments for 'ttl' command")
+	}
+
+	var key string = args[0]
+
+	// Get the key from the Hash Table
+	obj := Get(key)
+
+	// If key does not exist, return RESP encoded -2 denoting key does not exist
+	if obj == nil {
+		c.Write([]byte(":-2\r\n"))
+		return nil
+	}
+
+	// If object exist, but no expiration is set on it then send -1
+	if obj.ExpiresAt == -1 {
+		c.Write([]byte(":-1\r\n"))
+		return nil
+	}
+
+	// Compute the time remaining for the key to expire and
+	// return the RESP encoded form of it
+	durationMs := obj.ExpiresAt - time.Now().UnixMilli()
+
+	// If key expired i.e. key does not exist hence return -2
+	if durationMs < 0 {
+		c.Write([]byte(":-2\r\n"))
+		return nil
+	}
+
+	// Return TTL in seconds
+	c.Write(Encode(int64(durationMs/1000), false))
+	return nil
+}
+
 func EvalAndRespond(cmd *RedisCmd, c io.ReadWriter) error {
 	switch cmd.Cmd {
 	case "PING":
@@ -96,6 +133,8 @@ func EvalAndRespond(cmd *RedisCmd, c io.ReadWriter) error {
 		return evalSET(cmd.Args, c)
 	case "GET":
 		return evalGET(cmd.Args, c)
+	case "TTL":
+		return evalTTL(cmd.Args, c)
 	default:
 		return evalPING(cmd.Args, c)
 	}
