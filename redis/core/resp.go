@@ -146,7 +146,7 @@ func Encode(value any, isSimple bool) []byte {
 			return fmt.Appendf(nil, "+%s\r\n", v)
 		}
 		return fmt.Appendf(nil, "$%d\r\n%s\r\n", len(v), v)
-	case int64:
+	case int, int8, int16, int64:
 		return []byte(fmt.Sprintf(":%d\r\n", v))
 	default:
 		return RESP_NIL

@@ -4,12 +4,17 @@ import (
 	"log"
 	"net"
 	"syscall"
+	"time"
 
 	"redis/config"
 	"redis/core"
 )
 
-var con_clients int = 0
+var (
+	con_clients      int           = 0
+	cronFrequency    time.Duration = 1 * time.Second
+	lastCronExecTime time.Time     = time.Now()
+)
 
 func RunAsyncTCPServer() error {
 	log.Printf("starting a asynchronous TCP server on %s:%d", config.Host, config.Port)
@@ -66,6 +71,11 @@ func RunAsyncTCPServer() error {
 	}
 
 	for {
+		if time.Now().After(lastCronExecTime.Add(cronFrequency)) {
+			core.DeleteExpiredKeys()
+			lastCronExecTime = time.Now()
+		}
+
 		// See if any FD is ready for an IO
 		nevents, e := syscall.EpollWait(epollFD, events[:], -1)
 		if e != nil {
